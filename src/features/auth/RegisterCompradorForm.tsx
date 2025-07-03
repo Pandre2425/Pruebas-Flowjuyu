@@ -19,6 +19,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { useFilePreview } from "@/hooks/use-file-preview"
 
 type CampoTexto = {
   id: keyof RegisterVendedorValues
@@ -98,29 +99,23 @@ function Campo<T extends FieldValues>({
   )
 }
 
-function getPreviewFile(value: unknown): string | undefined {
-  if (typeof window === "undefined") return undefined
-  if (value instanceof File) {
-    return URL.createObjectURL(value)
-  }
-  return undefined
-}
 
 function CampoArchivo<T extends FieldValues>({
   id,
   label,
   register,
   error,
-  preview,
+  file,
   setValue,
 }: {
   id: Path<T>
   label: string
   register: UseFormRegister<T>
   error?: string
-  preview?: string
+  file?: File | null
   setValue: (id: Path<T>, file: File) => void
 }) {
+  const preview = useFilePreview(file)
   return (
     <div className="space-y-1">
       <Label htmlFor={id}>{label}</Label>
@@ -214,6 +209,9 @@ export default function RegisterVendedorForm() {
       departamentosConMunicipios.find(d => d.nombre === departamento)?.municipios ?? []
     )
   }, [departamento])
+
+  const logoFile = watch("logo") as File | undefined
+  const logoPreview = useFilePreview(logoFile)
 
   const onSubmit = useCallback(
     async (data: RegisterVendedorValues) => {
@@ -350,13 +348,9 @@ export default function RegisterVendedorForm() {
                       if (file) setValue("logo", file)
                     }}
                   />
-                  {(() => {
-                    const logoValue = watch("logo")
-                    const preview = getPreviewFile(logoValue)
-                    return preview ? (
-                      <img src={preview} alt="Logo" className="mt-2 w-24 rounded" />
-                    ) : null
-                  })()}
+                  {logoPreview && (
+                    <img src={logoPreview} alt="Logo" className="mt-2 w-24 rounded" />
+                  )}
                 </div>
               </div>
             </div>
@@ -372,7 +366,7 @@ export default function RegisterVendedorForm() {
                     label={label}
                     register={register}
                     setValue={setValue}
-                    preview={getPreviewFile(watch(id))}
+                    file={watch(id) as File | undefined}
                     error={errors[id as keyof RegisterVendedorValues]?.message as string}
                   />
                 ))}
