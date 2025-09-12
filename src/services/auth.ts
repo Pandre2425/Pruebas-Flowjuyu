@@ -35,12 +35,31 @@ export async function apiRegisterComprador(data: {
   }
 }
 
-export async function apiRegisterSeller(formData: FormData) {
+export async function apiRegisterSeller(data: {
+  nombre: string
+  correo: string
+  contraseña: string
+  telefono?: string
+  direccion?: string
+  nombreComercio?: string
+  telefonoComercio?: string
+  departamento?: string
+  municipio?: string
+  descripcion?: string
+  dpi?: string
+  logo?: string
+  fotoDPIFrente?: string
+  fotoDPIReverso?: string
+  selfieConDPI?: string
+}) {
   try {
     const res = await fetch("http://localhost:8800/api/register/seller", {
       method: "POST",
-      body: formData,
       credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     })
 
     if (!res.ok) {
